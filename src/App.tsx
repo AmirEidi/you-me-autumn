@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
-import { story as defaultStory, toFaNumber, type StoryScene } from './story'
+import { story as defaultStory, toFaNumber, type LyricLine, type StoryScene } from './story'
 
 function MediaFrame({ media }: { media: StoryScene['media'] }) {
   const [failed, setFailed] = useState(false)
@@ -35,13 +35,133 @@ type AppProps = {
   previewIndex?: number
 }
 
+/**
+ * Resolve a play time for every lyric line.
+ *
+ * Lines carry a `t` only once someone has run the editor's sync tool. Until
+ * then they are spread evenly across the track, so the scene is watchable
+ * immediately instead of dumping all the lyrics at once. A partly-synced list
+ * holds the last known time forward rather than snapping back to zero.
+ */
+const resolveTimings = (lyrics: LyricLine[], duration: number): number[] => {
+  if (lyrics.length === 0) return []
+
+  if (lyrics.some((line) => typeof line.t === 'number')) {
+    let last = 0
+    return lyrics.map((line) => {
+      if (typeof line.t === 'number') last = line.t
+      return last
+    })
+  }
+
+  if (!duration) return lyrics.map(() => 0)
+  const step = duration / (lyrics.length + 1)
+  return lyrics.map((_, index) => step * (index + 1))
+}
+
+function MusicPlayer({ music }: { music: NonNullable<StoryScene['music']> }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const activeRef = useRef<HTMLParagraphElement | null>(null)
+  const [failed, setFailed] = useState(false)
+  const [blocked, setBlocked] = useState(false)
+  const [time, setTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+
+  const lyrics = useMemo(() => music.lyrics ?? [], [music.lyrics])
+  const timings = useMemo(() => resolveTimings(lyrics, duration), [lyrics, duration])
+
+  const activeIndex = useMemo(() => {
+    let found = -1
+    for (let i = 0; i < timings.length; i += 1) {
+      if (timings[i] <= time) found = i
+      else break
+    }
+    return found
+  }, [timings, time])
+
+  // The reader has clicked through a dozen scenes to get here, so the page
+  // already has user activation and autoplay is normally allowed. Browsers can
+  // still refuse, so fall back to a play button rather than a silent scene.
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    audio.play().then(
+      () => setBlocked(false),
+      () => setBlocked(true),
+    )
+  }, [music.src])
+
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, [activeIndex])
+
+  const play = () => {
+    audioRef.current?.play().then(
+      () => setBlocked(false),
+      () => setBlocked(true),
+    )
+  }
+
+  if (failed) {
+    return (
+      <div className="music-card">
+        <div className="music-header">
+          <span aria-hidden="true">♫</span>
+          <strong>{music.title}</strong>
+        </div>
+        <div className="music-fallback">
+          <p>🎧</p>
+          <p>{music.title}</p>
+          <small>فایل آهنگ هنوز نرسیده :)</small>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="music-card">
+      <div className="music-header">
+        <span aria-hidden="true">♫</span>
+        <strong>{music.title}</strong>
+      </div>
+
+      <audio
+        ref={audioRef}
+        src={music.src}
+        onTimeUpdate={(event) => setTime(event.currentTarget.currentTime)}
+        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+        onError={() => setFailed(true)}
+      />
+
+      {blocked && (
+        <button className="audio-button" onClick={play} type="button">
+          ▶ پخش
+        </button>
+      )}
+
+      {lyrics.length > 0 && (
+        <div className="lyrics" dir="ltr">
+          {lyrics.map((line, index) => (
+            <p
+              key={index}
+              ref={index === activeIndex ? activeRef : null}
+              className={index === activeIndex ? 'lyric-line active' : 'lyric-line'}
+            >
+              {line.text}
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function App({ scenes, previewIndex }: AppProps = {}) {
   const story = scenes && scenes.length > 0 ? scenes : defaultStory
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answer, setAnswer] = useState<'yes' | 'later' | null>(null)
-  const [audioError, setAudioError] = useState(false)
   const [fleePosition, setFleePosition] = useState({ x: 120, y: 30 })
-  const audioRef = useRef<HTMLAudioElement | null>(null)
   const choiceRef = useRef<HTMLDivElement | null>(null)
 
   const activeIndex = Math.min(previewIndex ?? currentIndex, story.length - 1)
@@ -52,7 +172,6 @@ function App({ scenes, previewIndex }: AppProps = {}) {
   useEffect(() => {
     if (previewIndex === undefined) return
     setAnswer(null)
-    setAudioError(false)
   }, [previewIndex])
 
   useEffect(() => {
@@ -101,23 +220,7 @@ function App({ scenes, previewIndex }: AppProps = {}) {
   const restart = () => {
     setCurrentIndex(0)
     setAnswer(null)
-    setAudioError(false)
     setFleePosition({ x: 0, y: 0 })
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
-    }
-  }
-
-  const enableAudio = async () => {
-    const audio = audioRef.current
-    if (!audio) return
-
-    try {
-      await audio.play()
-    } catch {
-      setAudioError(true)
-    }
   }
 
   return (
@@ -168,33 +271,7 @@ function App({ scenes, previewIndex }: AppProps = {}) {
             ))}
           </div>
 
-          {scene.kind === 'music' && (
-            <div className="music-card">
-              <div className="music-header">
-                <span aria-hidden="true">♫</span>
-                <strong>{scene.music?.title}</strong>
-              </div>
-
-              {audioError ? (
-                <div className="music-fallback">
-                  <p>🎧</p>
-                  <p>Cinnamon Girl</p>
-                  <small>فایل آهنگ هنوز نرسیده :)</small>
-                </div>
-              ) : (
-                <>
-                  <audio
-                    ref={audioRef}
-                    src={scene.music?.src}
-                    onError={() => setAudioError(true)}
-                  />
-                  <button className="audio-button" onClick={enableAudio} type="button">
-                    ▶ پخش
-                  </button>
-                </>
-              )}
-            </div>
-          )}
+          {scene.kind === 'music' && scene.music && <MusicPlayer music={scene.music} />}
 
           {scene.kind === 'choice' && answer === null && (
             <div className="choice-box" ref={choiceRef}>

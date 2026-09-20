@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import App from '../App'
 import rawStory from '../story.json'
 import {
   BACKGROUNDS,
   KINDS,
+  asset,
   emptyScene,
   resolveScene,
   toFaNumber,
@@ -14,8 +15,118 @@ import {
 import './editor.css'
 
 type SaveState = { status: 'idle' | 'saving' | 'saved' | 'error'; message?: string }
+type Music = NonNullable<StoryScene['music']>
 
 const clone = (scenes: StoryScene[]): StoryScene[] => JSON.parse(JSON.stringify(scenes))
+
+const formatTime = (seconds: number | null) => {
+  if (seconds === null) return '--:--'
+  const whole = Math.floor(seconds)
+  const mins = Math.floor(whole / 60)
+  const secs = whole % 60
+  return `${mins}:${String(secs).padStart(2, '0')}.${String(Math.floor((seconds % 1) * 10))}`
+}
+
+/**
+ * Timestamps cannot be derived from the audio file, so they get tapped in:
+ * play the track and hit Mark as each line lands. Mark stamps the cursor line
+ * and steps forward, which keeps both hands free of the mouse.
+ */
+function LyricsPanel({ music, onChange }: { music: Music; onChange: (music: Music) => void }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [cursor, setCursor] = useState(0)
+  const lyrics = music.lyrics ?? []
+
+  const setLyrics = (next: Music['lyrics']) => onChange({ ...music, lyrics: next })
+
+  const mark = () => {
+    const audio = audioRef.current
+    if (!audio || cursor >= lyrics.length) return
+
+    const at = audio.currentTime
+    setLyrics(lyrics.map((line, i) => (i === cursor ? { ...line, t: at } : line)))
+    setCursor((index) => Math.min(index + 1, lyrics.length))
+  }
+
+  // Retyping the lyrics would lose the timings, so text edits match up by index.
+  const replaceText = (value: string) => {
+    const texts = value.split('\n')
+    setLyrics(texts.map((text, i) => ({ t: lyrics[i]?.t ?? null, text })))
+    setCursor((index) => Math.min(index, texts.length))
+  }
+
+  const timed = lyrics.filter((line) => typeof line.t === 'number').length
+
+  return (
+    <div className="lyrics-panel">
+      <div className="lyrics-tools">
+        <audio ref={audioRef} src={asset(music.src)} controls preload="metadata" />
+        <div className="lyrics-buttons">
+          <button type="button" className="primary" onClick={mark} disabled={cursor >= lyrics.length}>
+            Mark line {Math.min(cursor + 1, lyrics.length)}
+          </button>
+          <button type="button" onClick={() => setCursor(0)}>
+            Cursor to top
+          </button>
+          <button
+            type="button"
+            onClick={() => setLyrics(lyrics.map((line) => ({ ...line, t: null })))}
+            disabled={timed === 0}
+          >
+            Clear times
+          </button>
+          <span className="lyrics-count">
+            {timed}/{lyrics.length} timed
+          </span>
+        </div>
+      </div>
+
+      <div className="lyrics-rows">
+        {lyrics.map((line, index) => (
+          <div
+            key={index}
+            className={index === cursor ? 'lyrics-row cursor' : 'lyrics-row'}
+            onClick={() => setCursor(index)}
+          >
+            <button
+              type="button"
+              className="tiny"
+              onClick={(event) => {
+                event.stopPropagation()
+                const audio = audioRef.current
+                if (!audio) return
+                setLyrics(lyrics.map((l, i) => (i === index ? { ...l, t: audio.currentTime } : l)))
+              }}
+            >
+              set
+            </button>
+            <button
+              type="button"
+              className="tiny lyrics-seek"
+              disabled={line.t === null}
+              onClick={(event) => {
+                event.stopPropagation()
+                if (audioRef.current && line.t !== null) audioRef.current.currentTime = line.t
+              }}
+            >
+              {formatTime(line.t)}
+            </button>
+            <span className="lyrics-text">{line.text}</span>
+          </div>
+        ))}
+      </div>
+
+      <label>
+        <span>lyrics text — one line each, timings are kept by position</span>
+        <textarea
+          rows={6}
+          value={lyrics.map((line) => line.text).join('\n')}
+          onChange={(event) => replaceText(event.target.value)}
+        />
+      </label>
+    </div>
+  )
+}
 
 export function StoryEditor() {
   const [saved, setSaved] = useState<StoryScene[]>(() => clone(rawStory as StoryScene[]))
@@ -23,6 +134,8 @@ export function StoryEditor() {
   const [selected, setSelected] = useState(0)
   const [save, setSave] = useState<SaveState>({ status: 'idle' })
   const [mediaFiles, setMediaFiles] = useState<string[]>([])
+  // What the file held when this tab loaded, so the server can reject a stale write.
+  const base = useRef(JSON.stringify(rawStory))
 
   const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(saved), [draft, saved])
   const scene = draft[selected]
@@ -48,10 +161,11 @@ export function StoryEditor() {
       const response = await fetch('/__story', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(draft),
+        body: JSON.stringify({ base: base.current, scenes: draft }),
       })
       if (!response.ok) throw new Error(await response.text())
 
+      base.current = JSON.stringify(draft)
       setSaved(clone(draft))
       setSave({ status: 'saved', message: 'saved to src/story.json' })
     } catch (error) {
@@ -351,23 +465,31 @@ export function StoryEditor() {
             </legend>
 
             {scene.music && (
-              <div className="row">
-                <label>
-                  <span>title</span>
-                  <input
-                    value={scene.music.title}
-                    onChange={(e) => patch({ music: { ...scene.music!, title: e.target.value } })}
-                  />
-                </label>
-                <label>
-                  <span>src — relative to public/</span>
-                  <input
-                    list="media-files"
-                    value={scene.music.src}
-                    onChange={(e) => patch({ music: { ...scene.music!, src: e.target.value } })}
-                  />
-                </label>
-              </div>
+              <>
+                <div className="row">
+                  <label>
+                    <span>title</span>
+                    <input
+                      value={scene.music.title}
+                      onChange={(e) => patch({ music: { ...scene.music!, title: e.target.value } })}
+                    />
+                  </label>
+                  <label>
+                    <span>src — relative to public/</span>
+                    <input
+                      list="media-files"
+                      value={scene.music.src}
+                      onChange={(e) => patch({ music: { ...scene.music!, src: e.target.value } })}
+                    />
+                  </label>
+                </div>
+
+                <LyricsPanel
+                  key={scene.id}
+                  music={scene.music}
+                  onChange={(music) => patch({ music })}
+                />
+              </>
             )}
           </fieldset>
 

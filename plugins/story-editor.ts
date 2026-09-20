@@ -1,4 +1,4 @@
-import { readdir, writeFile } from 'node:fs/promises'
+import { readFile, readdir, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import type { Plugin } from 'vite'
 
@@ -61,8 +61,23 @@ export function storyEditor(): Plugin {
         req.on('end', async () => {
           if (aborted) return
           try {
-            const scenes = JSON.parse(body)
+            const { base, scenes } = JSON.parse(body)
             if (!Array.isArray(scenes)) throw new Error('expected an array of scenes')
+
+            // A tab left open from an earlier session holds a stale draft, and a
+            // blind write would silently discard whatever reached the file since.
+            // Compare against what that editor actually loaded, and refuse if it moved.
+            if (typeof base === 'string') {
+              const current = JSON.stringify(JSON.parse(await readFile(target, 'utf8')))
+              if (current !== base) {
+                res.statusCode = 409
+                res.end(
+                  'src/story.json changed on disk since this editor loaded it. ' +
+                    'Reload the page to pick up that version — saving now would discard it.',
+                )
+                return
+              }
+            }
 
             await writeFile(target, `${JSON.stringify(scenes, null, 2)}\n`, 'utf8')
 

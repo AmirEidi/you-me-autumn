@@ -503,3 +503,43 @@ button:focus-visible {
     animation: none !important;
   }
 }
+
+/* Karaoke lyrics. The list is taller than the card, so it scrolls itself and
+   the player keeps the active line centred. */
+.lyrics {
+  max-height: min(42vh, 320px);
+  overflow-y: auto;
+  display: grid;
+  gap: 10px;
+  padding: 6px 4px;
+  scrollbar-width: thin;
+  text-align: center;
+  mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+.lyric-line {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.6;
+  opacity: 0.38;
+  transform: scale(0.97);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.lyric-line.active {
+  opacity: 1;
+  font-weight: 700;
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lyrics {
+    scroll-behavior: auto;
+  }
+
+  .lyric-line {
+    transition: none;
+  }
+}

@@ -40,7 +40,18 @@ export type StoryScene = {
   music?: {
     title: string
     src: string
+    /**
+     * Karaoke lines. `t` is the second the line lands on, or null when it has
+     * not been synced yet — the player then spreads untimed lines evenly across
+     * the track so the scene still works before anyone runs the sync tool.
+     */
+    lyrics?: LyricLine[]
   }
+}
+
+export type LyricLine = {
+  t: number | null
+  text: string
 }
 
 /**

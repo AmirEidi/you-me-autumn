@@ -80,7 +80,7 @@
       "",
       "خودِ خودش بود.",
       "",
-      "کسی که اصلاً فکر نمی‌کردم اونجا ببینمش..."
+      "کسی که اصلا فکر نمی‌کردم اونجا ببینمش..."
     ],
     "cta": "خب بعدش؟"
   },
@@ -113,19 +113,9 @@
     "cta": "ادامه"
   },
   {
-    "id": "spring",
-    "background": "spring",
-    "eyebrow": "صحنه ۹",
-    "lines": [
-      "چون من فقط ۲۶ تا فصل بهار توی زندگیم دیدم",
-      "و میخوام بشینم داستان اون سه تا فصل بهاری که ندیدم رو از تو بشنوم 🌱"
-    ],
-    "cta": "ادامه"
-  },
-  {
     "id": "cat",
     "background": "cozy",
-    "eyebrow": "صحنه ۱۰",
+    "eyebrow": "صحنه ۹",
     "kind": "media",
     "media": {
       "type": "video",
@@ -141,20 +131,11 @@
     "cta": "ادامه"
   },
   {
-    "id": "money",
-    "background": "night",
-    "eyebrow": "صحنه ۱۱",
-    "lines": [
-      "چون خیلی پولیثی"
-    ],
-    "cta": "ادامه"
-  },
-  {
     "id": "stutter",
     "background": "game",
-    "eyebrow": "صحنه ۱۲",
+    "eyebrow": "صحنه ۱۰",
     "lines": [
-      "چون به قول آقا مهدی ضامنی (سکران)",
+      "چون به قول آقا سکران",
       "ل-ل-لکنت دارم، م-م-من..."
     ],
     "cta": "ادامه"
@@ -162,7 +143,7 @@
   {
     "id": "still-no",
     "background": "night",
-    "eyebrow": "صحنه ۱۳",
+    "eyebrow": "صحنه ۱۱",
     "lines": [
       "هنوووز قانع نشدی؟ 😭",
       "خب اشکال نداره، بیا هنوز ادامه داره"
@@ -172,7 +153,7 @@
   {
     "id": "convince-me",
     "background": "night",
-    "eyebrow": "صحنه ۱۴",
+    "eyebrow": "صحنه ۱۲",
     "lines": [
       "خب ببین، سعی کن قانع شی"
     ],
@@ -181,7 +162,7 @@
   {
     "id": "still-no-2",
     "background": "night",
-    "eyebrow": "صحنه ۱۵",
+    "eyebrow": "صحنه ۱۳",
     "lines": [
       "هنوووز هم نه؟ 😭",
       "پس بزار یه چیزی رو بهت بگم..."
@@ -191,7 +172,7 @@
   {
     "id": "movie",
     "background": "cinematic",
-    "eyebrow": "صحنه ۱۶",
+    "eyebrow": "صحنه ۱۴",
     "kind": "movie",
     "media": {
       "type": "video",
@@ -211,36 +192,232 @@
   {
     "id": "music",
     "background": "cozy",
-    "eyebrow": "صحنه ۱۷",
-    "kind": "music",
+    "eyebrow": "صحنه ۱۵",
     "music": {
-      "title": "Cinnamon Girl",
-      "src": "media/Cinnamon Girl.mp3"
+      "title": "",
+      "src": ""
     },
     "lines": [
       "خب دیگه داریم کم کم به پایان تور نزدیک میشیم...",
-      "ولی قبل بزارم واست یه آهنگ پخش کنم",
-      "بهت قول میدم خوشت میاد 🎧"
+      "ولی قبل از رفتن بزار واست یه آهنگ پخش کنم",
+      "بهت قول میدم خوشت میاد(صدارو یکم زیاد کن) 🎧"
     ],
+    "cta": "ادامه"
+  },
+  {
+    "id": "song",
+    "background": "cozy",
+    "eyebrow": "صحنه ۱۶",
+    "kind": "music",
+    "music": {
+      "title": "Cinnamon Girl",
+      "src": "media/Cinnamon Girl.mp3",
+      "lyrics": [
+        {
+          "t": null,
+          "text": "Cinnamon in my teeth"
+        },
+        {
+          "t": null,
+          "text": "From your kiss"
+        },
+        {
+          "t": null,
+          "text": "You're touching me"
+        },
+        {
+          "t": null,
+          "text": "All the pills that you take"
+        },
+        {
+          "t": null,
+          "text": "Violet, blue, green, red to keep me"
+        },
+        {
+          "t": null,
+          "text": "At arm's length don't work"
+        },
+        {
+          "t": null,
+          "text": "You try to push me out"
+        },
+        {
+          "t": null,
+          "text": "But I just find my way back in"
+        },
+        {
+          "t": null,
+          "text": "Violet, blue, green, red to keep me out"
+        },
+        {
+          "t": null,
+          "text": "I win"
+        },
+        {
+          "t": null,
+          "text": "There's things I wanna say to you"
+        },
+        {
+          "t": null,
+          "text": "But I'll just let you live"
+        },
+        {
+          "t": null,
+          "text": "Like if you hold me without hurting me"
+        },
+        {
+          "t": null,
+          "text": "You'll be the first who ever did"
+        },
+        {
+          "t": null,
+          "text": "There's things I wanna talk about"
+        },
+        {
+          "t": null,
+          "text": "But better not to give"
+        },
+        {
+          "t": null,
+          "text": "But if you hold me without hurting me"
+        },
+        {
+          "t": null,
+          "text": "You'll be the first who ever did"
+        },
+        {
+          "t": null,
+          "text": "Ah, ah, ah, ah, ah, ah"
+        },
+        {
+          "t": null,
+          "text": "Hold me, love me, touch me, honey"
+        },
+        {
+          "t": null,
+          "text": "Be the first who ever did"
+        },
+        {
+          "t": null,
+          "text": "Ah, ah, ah, ah, ah, ah"
+        },
+        {
+          "t": null,
+          "text": "Hold me, love me, touch me, honey"
+        },
+        {
+          "t": null,
+          "text": "Be the first who ever did"
+        },
+        {
+          "t": null,
+          "text": "Kerosene in my hands"
+        },
+        {
+          "t": null,
+          "text": "You make me mad, on fire again"
+        },
+        {
+          "t": null,
+          "text": "All the pills that you take"
+        },
+        {
+          "t": null,
+          "text": "Violet, blue, green, red to keep me at arm's length don't work"
+        },
+        {
+          "t": null,
+          "text": "There's things I wanna say to you, but I'll just let you live"
+        },
+        {
+          "t": null,
+          "text": "Like if you hold me without hurting me"
+        },
+        {
+          "t": null,
+          "text": "You'll be the first who ever did"
+        },
+        {
+          "t": null,
+          "text": "There's things I wanna talk about, but better not to give"
+        },
+        {
+          "t": null,
+          "text": "But if you hold me without hurting me"
+        },
+        {
+          "t": null,
+          "text": "You'll be the first who ever did"
+        },
+        {
+          "t": null,
+          "text": "Ah, ah, ah, ah, ah, ah"
+        },
+        {
+          "t": null,
+          "text": "Hold me, love me, touch me, honey"
+        },
+        {
+          "t": null,
+          "text": "Be the first who ever did"
+        },
+        {
+          "t": null,
+          "text": "Ah, ah, ah, ah, ah, ah"
+        },
+        {
+          "t": null,
+          "text": "Hold me, love me, touch me, honey"
+        },
+        {
+          "t": null,
+          "text": "Be the first who ever did"
+        },
+        {
+          "t": null,
+          "text": "There's things I wanna say to you, but I'll just let you live"
+        },
+        {
+          "t": null,
+          "text": "Like if you hold me without hurting me"
+        },
+        {
+          "t": null,
+          "text": "You'll be the first who ever did"
+        },
+        {
+          "t": null,
+          "text": "There's things I wanna talk about, but better not to give"
+        },
+        {
+          "t": null,
+          "text": "Like if you hold me without hurting me"
+        },
+        {
+          "t": null,
+          "text": "You'll be the first who ever did"
+        }
+      ]
+    },
+    "lines": [],
     "cta": "ادامه"
   },
   {
     "id": "closing",
     "background": "autumn",
-    "eyebrow": "صحنه ۱۸",
+    "eyebrow": "صحنه ۱۷",
     "lines": [
-      "خب امیدوارم که از این سیاحت خوشت اومده باشه",
-      "من که خیلی کیف کردم وقتی داشتم اینارو برات مینوشتم",
-      ""
+      "راستش منکه خیلی کیف کردم وقتی داشتم اینارو برات مینوشتم ",
+      "امیدوارم که توهم خوشت امده باشه"
     ],
     "cta": "برو به سوال نهایی"
   },
   {
     "id": "closing-2",
     "background": "autumn",
-    "eyebrow": "صحنه ۱۹",
+    "eyebrow": "صحنه ۱۸",
     "lines": [
-      "و چون دوست دارم کار رو رسمی نگه دارم باید بپرسم که....."
+      "و چون دوست دارم کار رو رسمی نگه دارم باید بپرسم که..."
     ],
     "cta": "برو به سوال نهایی"
   },
