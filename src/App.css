@@ -530,7 +530,6 @@ button:focus-visible {
 
 .lyric-line.active {
   opacity: 1;
-  font-weight: 700;
   transform: scale(1);
 }
 
