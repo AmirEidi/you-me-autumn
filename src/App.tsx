@@ -21,6 +21,8 @@ type StoryScene = {
   }
 }
 
+const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
+
 const toFaNumber = (value: number) =>
   String(value).replace(/[0-9]/g, (digit) => ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'][Number(digit)])
 
@@ -79,7 +81,7 @@ const story: StoryScene[] = [
     kind: 'media',
     media: {
       type: 'video',
-      src: '/media/cat.mp4',
+      src: asset('media/cat.mp4'),
       alt: 'گربه‌ای که مثل توست',
       caption: '🐈',
       fallback: 'یه گربه‌ی خیلی جذاب اینجا باید دیده می‌شد...',
@@ -141,7 +143,7 @@ const story: StoryScene[] = [
     kind: 'movie',
     media: {
       type: 'video',
-      src: '/media/movie.mp4',
+      src: asset('media/movie.mp4'),
       alt: '🎬',
       caption: '🎬',
       fallback: 'یه صحنه‌ی سینمایی اینجا باید دیده می‌شد...',
@@ -161,7 +163,7 @@ const story: StoryScene[] = [
     kind: 'music',
     music: {
       title: 'Cinnamon Girl',
-      src: encodeURI('/media/Cinnamon Girl.mp3'),
+      src: encodeURI(asset('media/Cinnamon Girl.mp3')),
     },
     lines: [
       'خب دیگه داریم کم کم به پایان تور نزدیک میشیم...',
