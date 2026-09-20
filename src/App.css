@@ -542,3 +542,10 @@ button:focus-visible {
     transition: none;
   }
 }
+
+/* No timings yet, so nothing is "current" — show every line plainly rather
+   than dimming the lot behind a highlight that has nothing to track. */
+.lyrics.unsynced .lyric-line {
+  opacity: 1;
+  transform: none;
+}

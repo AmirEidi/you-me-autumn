@@ -39,24 +39,21 @@ type AppProps = {
  * Resolve a play time for every lyric line.
  *
  * Lines carry a `t` only once someone has run the editor's sync tool. Until
- * then they are spread evenly across the track, so the scene is watchable
- * immediately instead of dumping all the lyrics at once. A partly-synced list
- * holds the last known time forward rather than snapping back to zero.
+ * then there is nothing to follow: guessing at even spacing just drifts further
+ * from the song the longer it plays, which reads as broken. Untimed lyrics get
+ * no timings at all, and the player shows them as plain text instead.
+ *
+ * A partly-synced list holds the last known time forward rather than snapping
+ * back to zero.
  */
-const resolveTimings = (lyrics: LyricLine[], duration: number): number[] => {
-  if (lyrics.length === 0) return []
+const resolveTimings = (lyrics: LyricLine[]): number[] => {
+  if (!lyrics.some((line) => typeof line.t === 'number')) return []
 
-  if (lyrics.some((line) => typeof line.t === 'number')) {
-    let last = 0
-    return lyrics.map((line) => {
-      if (typeof line.t === 'number') last = line.t
-      return last
-    })
-  }
-
-  if (!duration) return lyrics.map(() => 0)
-  const step = duration / (lyrics.length + 1)
-  return lyrics.map((_, index) => step * (index + 1))
+  let last = 0
+  return lyrics.map((line) => {
+    if (typeof line.t === 'number') last = line.t
+    return last
+  })
 }
 
 function MusicPlayer({ music }: { music: NonNullable<StoryScene['music']> }) {
@@ -65,10 +62,10 @@ function MusicPlayer({ music }: { music: NonNullable<StoryScene['music']> }) {
   const [failed, setFailed] = useState(false)
   const [blocked, setBlocked] = useState(false)
   const [time, setTime] = useState(0)
-  const [duration, setDuration] = useState(0)
 
   const lyrics = useMemo(() => music.lyrics ?? [], [music.lyrics])
-  const timings = useMemo(() => resolveTimings(lyrics, duration), [lyrics, duration])
+  const timings = useMemo(() => resolveTimings(lyrics), [lyrics])
+  const synced = timings.length > 0
 
   const activeIndex = useMemo(() => {
     let found = -1
@@ -93,6 +90,7 @@ function MusicPlayer({ music }: { music: NonNullable<StoryScene['music']> }) {
   }, [music.src])
 
   useEffect(() => {
+    if (activeIndex < 0) return
     activeRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
   }, [activeIndex])
 
@@ -130,7 +128,6 @@ function MusicPlayer({ music }: { music: NonNullable<StoryScene['music']> }) {
         ref={audioRef}
         src={music.src}
         onTimeUpdate={(event) => setTime(event.currentTarget.currentTime)}
-        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
         onError={() => setFailed(true)}
       />
 
@@ -141,7 +138,7 @@ function MusicPlayer({ music }: { music: NonNullable<StoryScene['music']> }) {
       )}
 
       {lyrics.length > 0 && (
-        <div className="lyrics" dir="ltr">
+        <div className={synced ? 'lyrics' : 'lyrics unsynced'} dir="ltr">
           {lyrics.map((line, index) => (
             <p
               key={index}
