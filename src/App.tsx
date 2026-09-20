@@ -1,199 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
-
-type StoryScene = {
-  id: string
-  background: 'autumn' | 'coffee' | 'spring' | 'game' | 'cinematic' | 'night' | 'cozy'
-  eyebrow?: string
-  lines: string[]
-  cta: string
-  kind?: 'intro' | 'quest' | 'media' | 'co-op' | 'movie' | 'music' | 'choice'
-  media?: {
-    type: 'video' | 'image'
-    src: string
-    alt: string
-    caption?: string
-    fallback?: string
-  }
-  music?: {
-    title: string
-    src: string
-  }
-}
-
-const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
-
-const toFaNumber = (value: number) =>
-  String(value).replace(/[0-9]/g, (digit) => ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'][Number(digit)])
-
-const story: StoryScene[] = [
-  {
-    id: 'greeting',
-    background: 'autumn',
-    eyebrow: 'صحنه ۱',
-    lines: [
-      'سلام خانوم دارچینی 🦦',
-      'خوشحالم که دعوت منو برای تور شگفت‌عقلاده «چرا باید منو واست دیت انتخاب کنی» پذیرفتی',
-    ],
-    cta: 'خب، بریم؟ 👀',
-  },
-  {
-    id: 'intro',
-    background: 'game',
-    eyebrow: 'صحنه ۲',
-    kind: 'intro',
-    lines: [
-      'خب اجازه بدین که خودمو معرفی کنم ☝️',
-      'باس هستم، عباس 😎',
-      'من یه برنامه‌نویسم، با اجازه مهندسم یه پارچه آقا',
-      'اشتباه نکن، هک بلدن نیستم',
-      '(البته که قلبت هک می‌کنم)',
-      'من بازیسازم',
-      'خلاقیت، تجربه، یکسری حسایی که نمیشه تو دنیای واقعی تجربه کرد رو من توی بازی پیدا می‌کنم.',
-    ],
-    cta: 'ادامه بده',
-  },
-  {
-    id: 'coffee',
-    background: 'coffee',
-    eyebrow: 'صحنه ۴',
-    lines: [
-      'چون قراره که اولین قهوه پاییزمون رو باهم بخوریم تو یه کافه دنج',
-      'و بعدش بریم خیابون ولیعصر رو قدم بزنیم',
-      'زمان از دستمون بره ☕🍂',
-    ],
-    cta: 'ادامه',
-  },
-  {
-    id: 'spring',
-    background: 'spring',
-    eyebrow: 'صحنه ۵',
-    lines: [
-      'چون من فقط ۲۶ تا فصل بهار توی زندگیم دیدم',
-      'و میخوام بشینم داستان اون سه تا فصل بهاری که ندیدم رو از تو بشنوم 🌱',
-    ],
-    cta: 'ادامه',
-  },
-  {
-    id: 'cat',
-    background: 'cozy',
-    eyebrow: 'صحنه ۶',
-    kind: 'media',
-    media: {
-      type: 'video',
-      src: asset('media/cat.mp4'),
-      alt: 'گربه‌ای که مثل توست',
-      caption: '🐈',
-      fallback: 'یه گربه‌ی خیلی جذاب اینجا باید دیده می‌شد...',
-    },
-    lines: ['چون تو شبیه این گربه‌هه ای', 'و من میخوام بدزدمت 🐈'],
-    cta: 'ادامه',
-  },
-  {
-    id: 'money',
-    background: 'night',
-    eyebrow: 'صحنه ۷',
-    lines: [
-      'چون خیلی پولیثی',
-      'این داستانشو باید برات تعریف کنم، خیلی باحاله',
-    ],
-    cta: 'ادامه',
-  },
-  {
-    id: 'stutter',
-    background: 'game',
-    eyebrow: 'صحنه ۸',
-    lines: [
-      'چون به قول آقا مهدی ضامنی (سکران)',
-      'ل-ل-لکنت دارم، م-م-من...',
-    ],
-    cta: 'ادامه',
-  },
-  {
-    id: 'still-no',
-    background: 'night',
-    eyebrow: 'صحنه ۹',
-    lines: [
-      'هنوووز قانع نشدی؟ 😭',
-      'خب اشکال نداره، بیا هنوز ادامه داره',
-    ],
-    cta: 'ادامه',
-  },
-  {
-    id: 'convince-me',
-    background: 'night',
-    eyebrow: 'صحنه ۱۰',
-    lines: ['خب ببین، سعی کن قانع شی'],
-    cta: 'ادامه',
-  },
-  {
-    id: 'still-no-2',
-    background: 'night',
-    eyebrow: 'صحنه ۱۲',
-    lines: [
-      'هنوووز هم نه؟ 😭',
-      'پس بزار یه چیزی رو بهت بگم...',
-    ],
-    cta: 'ادامه',
-  },
-  {
-    id: 'movie',
-    background: 'cinematic',
-    eyebrow: 'صحنه ۱۳',
-    kind: 'movie',
-    media: {
-      type: 'video',
-      src: asset('media/movie.mp4'),
-      alt: '🎬',
-      caption: '🎬',
-      fallback: 'یه صحنه‌ی سینمایی اینجا باید دیده می‌شد...',
-    },
-    lines: [
-      'به نظر من زندگی مثل یه فیلم سینمایی میمونه...',
-      'تنهایی دیدنش هیچ کیفی نداره،',
-      'این فیلم رو باید دونفری دید.',
-      'و من خیلی دوست دارم این فیلم رو با تو ببینم.',
-    ],
-    cta: 'ادامه',
-  },
-  {
-    id: 'music',
-    background: 'cozy',
-    eyebrow: 'صحنه ۱۴',
-    kind: 'music',
-    music: {
-      title: 'Cinnamon Girl',
-      src: encodeURI(asset('media/Cinnamon Girl.mp3')),
-    },
-    lines: [
-      'خب دیگه داریم کم کم به پایان تور نزدیک میشیم...',
-      'ولی قبل بزارم واست یه آهنگ پخش کنم',
-      'بهت قول میدم خوشت میاد 🎧',
-    ],
-    cta: 'ادامه',
-  },
-  {
-    id: 'closing',
-    background: 'autumn',
-    eyebrow: 'صحنه ۱۵',
-    lines: [
-      'خب امیدوارم که از این تور خوشت اومده باشه',
-      'من که خیلی کیف کردم وقتی داشتم اینارو برات مینوشتم',
-      'این بخش کوچیکی از دلیل‌هایی بود که چرا فکر میکنم با من دیت بیای',
-      'و خیلی مشتاقم که ببینم',
-      'و چون دوست دارم کار رو رسمی نگه دارم باید بپرسم که.....',
-    ],
-    cta: 'برو به سوال نهایی',
-  },
-  {
-    id: 'final',
-    background: 'cinematic',
-    eyebrow: 'سوال نهایی',
-    kind: 'choice',
-    lines: ['می‌خوای با من یه قرار بذاریم؟'],
-    cta: 'آره 🥹',
-  },
-]
+import { story as defaultStory, toFaNumber, type StoryScene } from './story'
 
 function MediaFrame({ media }: { media: StoryScene['media'] }) {
   const [failed, setFailed] = useState(false)
@@ -221,7 +28,15 @@ function MediaFrame({ media }: { media: StoryScene['media'] }) {
   )
 }
 
-function App() {
+type AppProps = {
+  /** Editor preview passes its unsaved draft here; the site itself uses story.json. */
+  scenes?: StoryScene[]
+  /** Editor preview pins the view to one scene instead of letting the reader advance. */
+  previewIndex?: number
+}
+
+function App({ scenes, previewIndex }: AppProps = {}) {
+  const story = scenes && scenes.length > 0 ? scenes : defaultStory
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answer, setAnswer] = useState<'yes' | 'later' | null>(null)
   const [audioError, setAudioError] = useState(false)
@@ -229,8 +44,16 @@ function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const choiceRef = useRef<HTMLDivElement | null>(null)
 
-  const scene = story[currentIndex]
-  const progress = ((currentIndex + 1) / story.length) * 100
+  const activeIndex = Math.min(previewIndex ?? currentIndex, story.length - 1)
+  const scene = story[activeIndex]
+  const progress = ((activeIndex + 1) / story.length) * 100
+
+  // Jumping to another scene in the editor should start that scene from a clean slate.
+  useEffect(() => {
+    if (previewIndex === undefined) return
+    setAnswer(null)
+    setAudioError(false)
+  }, [previewIndex])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -243,7 +66,7 @@ function App() {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [answer, scene.kind])
+  }, [answer, scene.kind, story.length])
 
   const moveFleeButton = () => {
     const box = choiceRef.current
@@ -305,7 +128,7 @@ function App() {
         <header className="scene-header">
           <div className="badge">{scene.eyebrow}</div>
           <div className="progress-wrap" aria-label="پیشرفت داستان">
-            <span>{toFaNumber(currentIndex + 1)} / {toFaNumber(story.length)}</span>
+            <span>{toFaNumber(activeIndex + 1)} / {toFaNumber(story.length)}</span>
             <div className="progress-bar">
               <span style={{ width: `${progress}%` }} />
             </div>
